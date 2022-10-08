@@ -18,7 +18,7 @@ namespace KarlsonLevels
         public static List<LevelObject> Level = new List<LevelObject>();
         public static LevelObjectData[] LevelData;
         public static bool editMode;
-        public static MoveModeEnum MM;
+        public static MoveModeEnum MovementMode;
         public static int movableObj; // Id of the object that's currently in control, only applicable in edit mode
         public const string version = "0.1.3";
         public override void OnSceneWasInitialized(int buildIndex, string sceneName) {

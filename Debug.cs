@@ -45,10 +45,15 @@ namespace KarlsonLevels
                         break;
                     case "moveobj":
                         movableObj = Convert.ToInt32(command[1]);
+                        MovementMode = MoveModeEnum.movement;
                         break;
                     case "rotate":
+                        movableObj = Convert.ToInt32(command[1]);
+                        MovementMode = MoveModeEnum.rotation;
                         break;
                     case "scale":
+                        movableObj = Convert.ToInt32(command[1]);
+                        MovementMode = MoveModeEnum.scale;
                         break;
                     default:
                         return true;
