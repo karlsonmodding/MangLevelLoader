@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KarlsonLevels", "KarlsonLevels.csproj", "{65047FC2-35AF-4EFB-8A15-5FCA1A9684BB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MangLevelLoader", "MangLevelLoader.csproj", "{65047FC2-35AF-4EFB-8A15-5FCA1A9684BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
