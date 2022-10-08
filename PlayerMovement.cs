@@ -17,16 +17,27 @@ namespace KarlsonLevels
 			{
 				float x = Input.GetAxisRaw("Horizontal");
 				float z = Input.GetAxisRaw("Vertical");
-				float y = __instance.gameObject.transform.position.y;
+				float y = 0;
+				if (Input.GetButton("Pickup")) y = 1f;
+				if (Input.GetButton("Drop")) y = -1f;
 				if (Main.movableObj == 0)
 				{
 					__instance.gameObject.transform.position += Camera.main.transform.forward * z + Camera.main.transform.right * x;
 					__instance.rb.velocity = Vector3.zero;
 				}
-				else
+				else if (Main.MovementMode == Main.MoveModeEnum.movement)
 				{
 					Vector3 foo = Camera.main.transform.forward * z + Camera.main.transform.right * x;
-					Main.Level[Main.IdToIndex(Main.movableObj)].Object.transform.position += new Vector3(foo.x, 0, foo.z);
+					Main.Level[Main.IdToIndex(Main.movableObj)].Object.transform.position += new Vector3(foo.x, y, foo.z);
+				}
+				else if (Main.MovementMode == Main.MoveModeEnum.scale)
+				{
+					Main.Level[Main.IdToIndex(Main.movableObj)].Object.transform.localScale += new Vector3(x, y, z);
+				}
+				else // rotation ofc
+                {
+					Main.Level[Main.IdToIndex(Main.movableObj)].Object.transform.eulerAngles += new Vector3(x, y, z);
+
 				}
 				return false;
 			}

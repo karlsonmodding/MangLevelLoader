@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 using System.Security.Cryptography;
 
 
-[assembly: MelonInfo(typeof(KarlsonLevels.Main), "MangLevelLoader", KarlsonLevels.Main.version + "-alpha", "Mang432")]
+[assembly: MelonInfo(typeof(KarlsonLevels.Main), "MangLevelLoader", KarlsonLevels.Main.version + "-beta", "Mang432")]
 [assembly: MelonGame("Dani", "Karlson")]
 namespace KarlsonLevels
 {
