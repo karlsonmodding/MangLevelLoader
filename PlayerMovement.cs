@@ -27,8 +27,8 @@ namespace KarlsonLevels
 				}
 				else if (Main.MovementMode == Main.MoveModeEnum.movement)
 				{
-					Vector3 foo = Camera.main.transform.forward * z + Camera.main.transform.right * x;
-					Main.Level[Main.IdToIndex(Main.movableObj)].Object.transform.position += new Vector3(foo.x, y, foo.z);
+					Vector3 movReltiveToCam = Camera.main.transform.forward * z + Camera.main.transform.right * x;
+					Main.Level[Main.IdToIndex(Main.movableObj)].Object.transform.position += new Vector3(movReltiveToCam.x, y, movReltiveToCam.z);
 				}
 				else if (Main.MovementMode == Main.MoveModeEnum.scale)
 				{

@@ -1,10 +1,11 @@
 ﻿using MelonLoader;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Security.Cryptography;
 
 
 [assembly: MelonInfo(typeof(KarlsonLevels.Main), "MangLevelLoader", KarlsonLevels.Main.version + "-alpha", "Mang432")]
@@ -20,7 +21,7 @@ namespace KarlsonLevels
 		public static bool editMode;
 		public static MoveModeEnum MovementMode;
 		public static int movableObj; // Id of the object that's currently in control, only applicable in edit mode
-		public const string version = "0.1.3";
+		public const string version = "0.2.0";
 		public override void OnSceneWasInitialized(int buildIndex, string sceneName) {
 			base.OnSceneWasInitialized(buildIndex, sceneName);
 			editMode = false;
@@ -36,6 +37,7 @@ namespace KarlsonLevels
 			List<GameObject> objs = new List<GameObject>();
 			for (int i = 2; i <= 12; i++)
 			{
+				yield return null;
 				SceneManager.LoadScene(i);
 				yield return null;
 				foreach (Collider g in Object.FindObjectsOfType<Collider>())
@@ -44,10 +46,10 @@ namespace KarlsonLevels
 					g.gameObject.transform.parent = null;
 					Object.DontDestroyOnLoad(g.gameObject);
 					g.gameObject.SetActive(false);
-					yield return null;
 				}
 				MelonLogger.Msg("Level " + (i - 1) + " loaded");
 			}
+			yield return null;
 			Prefabs = objs.ToArray();
 			SceneManager.LoadScene(1);
 			MelonLogger.Msg(Prefabs.Length + " objects loaded");
@@ -80,6 +82,50 @@ namespace KarlsonLevels
 				float.Parse(sArray[2]));
 
 			return result;
+		}
+
+		public static void ListAdd(ref List<byte> list, uint value) {
+			byte[] valb = BitConverter.GetBytes(value);
+			foreach(byte b in valb)
+            {
+				list.Add(b);
+            }
+        }
+
+		public static void ListAdd(ref List<byte> list, ushort value) {
+			byte[] valb = BitConverter.GetBytes(value);
+			foreach (byte b in valb)
+			{
+				list.Add(b);
+			}
+		}
+
+		public static void ListAdd(ref List<byte> list, float value) {
+			byte[] valb = BitConverter.GetBytes(value);
+			foreach (byte b in valb)
+			{
+				list.Add(b);
+			}
+		}
+
+		public static void ListAdd(ref List<byte> list, Vector3 value) {
+			ListAdd(ref list, value.x);
+			ListAdd(ref list, value.y); 
+			ListAdd(ref list, value.z);
+		}
+
+		public static uint Hash(byte[] data) {
+			uint hash = 5381;
+			for (int i = 0; i < data.Length; i++)
+            {
+				hash = (hash * 33) ^ data[i];
+			}
+			return hash;
+        }
+
+		public static bool CheckHash(byte[] data) {
+			byte[] test = BitConverter.GetBytes(Hash(data.Take(data.Length - 4).ToArray()));
+			return Enumerable.SequenceEqual(test, data.Skip(data.Length - 4).ToArray());
 		}
 
 		public enum MoveModeEnum : byte { movement, scale, rotation }
