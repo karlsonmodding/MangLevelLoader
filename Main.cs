@@ -21,7 +21,7 @@ namespace KarlsonLevels
 		public static bool editMode;
 		public static MoveModeEnum MovementMode;
 		public static int movableObj; // Id of the object that's currently in control, only applicable in edit mode
-		public const string version = "0.2.0";
+		public const string version = "0.2.1";
 		public override void OnSceneWasInitialized(int buildIndex, string sceneName) {
 			base.OnSceneWasInitialized(buildIndex, sceneName);
 			editMode = false;

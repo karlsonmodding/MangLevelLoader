@@ -24,7 +24,9 @@ namespace KarlsonLevels
 				switch (command[0].ToLower())
 				{
 					case "edit":
-						MelonCoroutines.Start(StartEdit());
+						if (command.Length != 1)
+							MelonCoroutines.Start(StartEdit(command[1]));
+						else MelonCoroutines.Start(StartEdit(null));
 						break;
 					case "list":
 						for (int i = 0; i < Prefabs.Length; i++)
@@ -36,7 +38,7 @@ namespace KarlsonLevels
 						Spawn(command[1], ref __instance);
 						break;
 					case "save":
-						NewSave();
+						NewSave(command[1]);
 						break;
 					case "load":
 						string path = null;
@@ -73,7 +75,7 @@ namespace KarlsonLevels
 			return false;
 		}
 
-		public static void NewSave() {
+		public static void NewSave(string name = "level") {
 			LevelData = new LevelObjectData[Level.Count];
 			for (int i = 0; i < LevelData.Length; i++)
 			{
@@ -100,7 +102,7 @@ namespace KarlsonLevels
 				ListAdd(ref save, lod.rotation);
 			}
 			ListAdd(ref save, Hash(save.ToArray()));
-			File.WriteAllBytes(Directory.GetCurrentDirectory() + "\\Levels\\level.mll", save.ToArray());
+			File.WriteAllBytes(Directory.GetCurrentDirectory() + $"\\Levels\\{name}.mll", save.ToArray());
 		}
 
 		static void Save() {
@@ -189,6 +191,7 @@ namespace KarlsonLevels
 				Quaternion q = new Quaternion();
 				q.eulerAngles = LevelData[i].rotation;
 				GameObject g = Object.Instantiate(Prefabs[LevelData[i].prefab], LevelData[i].position, q);
+				g.transform.localScale = LevelData[i].scale;
 				g.SetActive(true);
 				LevelObject lo;
 				lo.Object = g;
@@ -235,16 +238,18 @@ namespace KarlsonLevels
 			}
 		}
 
-		static IEnumerator StartEdit() {
+		static IEnumerator StartEdit(string path) {
 			Level = new List<LevelObject>();
-			SceneManager.LoadScene(6);
+			if (path == null)SceneManager.LoadScene(6);
+			else MelonCoroutines.Start(NewLoad(path));
 			yield return null;
-			yield return null; //why this like srsly why it doesnt make any sense
+			yield return null;
+			yield return null;
 			editMode = true;
 			PlayerMovement.Instance.gameObject.GetComponent<Rigidbody>().isKinematic = false;
 			PlayerMovement.Instance.gameObject.GetComponent<Rigidbody>().useGravity = false; //eh
 			PlayerMovement.Instance.gameObject.GetComponent<Collider>().isTrigger = true;
-			foreach (Collider c in Object.FindObjectsOfType<Collider>())
+			if (path == null) foreach (Collider c in Object.FindObjectsOfType<Collider>())
 			{
 				if (c.gameObject != PlayerMovement.Instance.gameObject) DestroyObject.Destroy(c.gameObject);
 			}
