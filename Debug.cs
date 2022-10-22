@@ -70,6 +70,9 @@ namespace KarlsonLevels
                         copy.Object.transform.rotation = original.Object.transform.rotation;
                         copy.Object.transform.localScale = original.Object.transform.localScale;
                         break;
+                    case "delete":
+                        Level.RemoveAt(IdToIndex(Convert.ToInt32(command[1])));
+                        break;
                     default:
                         return true;
                 }
