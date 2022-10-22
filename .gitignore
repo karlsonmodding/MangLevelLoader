@@ -1,8 +1,8 @@
 lib/
 bin/
 .suo
-obj/
+debug/
 .vs/
 *.dll
-.vs/MangLevelLoader/v16/.suo
+**.vs/MangLevelLoader/v16/.suo**
 
