@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 
-[assembly: MelonInfo(typeof(KarlsonLevels.Main), "MangLevelLoader", KarlsonLevels.Main.version + "-alpha", "Mang432")]
+[assembly: MelonInfo(typeof(KarlsonLevels.Main), "MangLevelLoader", KarlsonLevels.Main.version + "-beta", "Mang432")]
 [assembly: MelonGame("Dani", "Karlson")]
 namespace KarlsonLevels
 {
@@ -21,7 +21,8 @@ namespace KarlsonLevels
 		public static bool editMode;
 		public static MoveModeEnum MovementMode;
 		public static int movableObj; // Id of the object that's currently in control, only applicable in edit mode
-		public const string version = "0.2.1";
+		public static string currentLevel;
+		public const string version = "0.3.0";
 		public override void OnSceneWasInitialized(int buildIndex, string sceneName) {
 			base.OnSceneWasInitialized(buildIndex, sceneName);
 			editMode = false;
@@ -43,7 +44,7 @@ namespace KarlsonLevels
 				foreach (Collider g in Object.FindObjectsOfType<Collider>())
 				{
 					objs.Add(g.gameObject);
-					g.gameObject.transform.parent = null;
+					g.transform.parent = null;
 					Object.DontDestroyOnLoad(g.gameObject);
 					g.gameObject.SetActive(false);
 				}
