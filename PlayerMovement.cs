@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Harmony;
 using System.Reflection;
 using UnityEngine;
+using MelonLoader;
 
 namespace KarlsonLevels
 {
@@ -15,6 +16,18 @@ namespace KarlsonLevels
 		static bool Prefix(PlayerMovement __instance) {
 			if (Main.editMode)
 			{
+				if (Input.GetKey(KeyCode.Alpha1))
+                {
+					Main.MovementMode = Main.MoveModeEnum.movement;
+                }
+				else if (Input.GetKey(KeyCode.Alpha2))
+				{
+					Main.MovementMode = Main.MoveModeEnum.scale;
+				}
+				else if (Input.GetKey(KeyCode.Alpha3))
+				{
+					Main.MovementMode = Main.MoveModeEnum.rotation;
+				}
 				float x = Input.GetAxisRaw("Horizontal");
 				float z = Input.GetAxisRaw("Vertical");
 				float y = 0;
@@ -37,7 +50,6 @@ namespace KarlsonLevels
 				else // rotation ofc
                 {
 					Main.Level[Main.IdToIndex(Main.movableObj)].Object.transform.eulerAngles += new Vector3(x, y, z);
-
 				}
 				return false;
 			}

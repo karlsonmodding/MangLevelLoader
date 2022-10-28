@@ -37,6 +37,7 @@ namespace KarlsonLevels
                             MelonLogger.Msg(i + " " + Prefabs[i].name);
                         }
                         break;
+                    case "s":
                     case "spawn":
                         Spawn(command[1], ref __instance);
                         break;
@@ -64,14 +65,18 @@ namespace KarlsonLevels
                         movableObj = Convert.ToInt32(command[1]);
                         MovementMode = MoveModeEnum.scale;
                         break;
+                    case "c":
                     case "copy":
                         LevelObject original = Level[IdToIndex(Convert.ToInt32(command[1]))];
                         LevelObject copy = Spawn(original.prefab.ToString() , ref __instance);
                         copy.Object.transform.rotation = original.Object.transform.rotation;
                         copy.Object.transform.localScale = original.Object.transform.localScale;
                         break;
+                    case "d":
                     case "delete":
-                        Level.RemoveAt(IdToIndex(Convert.ToInt32(command[1])));
+                        int index = IdToIndex(Convert.ToInt32(command[1]));
+                        Object.Destroy(Level[index].Object);
+                        Level.RemoveAt(index);
                         break;
                     default:
                         return true;
@@ -338,8 +343,32 @@ namespace KarlsonLevels
                     MelonLogger.Error("Error: object not in Level list; this is likely a glicth, please report it to Mang");
                     return false;
                 }
-                __instance.fps.text = $"Obj name:{lobj.Object.name}\nId no:{lobj.Id}\nPrefab:{lobj.prefab}\nPosition:{lobj.Object.transform.position}\n" +
-                    $"Scale:{lobj.Object.transform.localScale}\nRotation:{lobj.Object.transform.eulerAngles}";
+                if (Input.GetButtonDown("Fire1")) {
+                    if (movableObj == 0) movableObj = lobj.Id;
+                    else movableObj = 0;
+                }
+                if (movableObj == 0)
+                {
+                    __instance.fps.text = $"Obj name:{lobj.Object.name}\nId no:{lobj.Id}\nPrefab:{lobj.prefab}\nPosition:{lobj.Object.transform.position}\n" +
+                        $"Scale:{lobj.Object.transform.localScale}\nRotation:{lobj.Object.transform.eulerAngles}";
+                }
+                else
+                {
+                    __instance.fps.text = $"Obj name:{lobj.Object.name}\nId no:{lobj.Id}\nPrefab:{lobj.prefab}\nPosition:{lobj.Object.transform.position}\n" +
+                        $"Scale:{lobj.Object.transform.localScale}\nRotation:{lobj.Object.transform.eulerAngles}\n<b>OBJECT LOCKED</b>\n";
+                    switch (MovementMode)
+                    {
+                        case MoveModeEnum.movement:
+                            __instance.fps.text += "Movement mode";
+                            break;
+                        case MoveModeEnum.scale:
+                            __instance.fps.text += "Scale mode";
+                            break;
+                        case MoveModeEnum.rotation:
+                            __instance.fps.text += "Rotation mode";
+                            break;
+                    }
+                }
             }
             return false;
         }
