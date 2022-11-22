@@ -17,6 +17,7 @@ namespace KarlsonLevels
     {
         const string magic = "MLL2\r\n";
         const byte fileVersion = 0;
+        public static byte step = 1, stepRate;
         static bool Prefix(Debug __instance) {
             string[] command = __instance.console.text.Split(' ');
             try
@@ -68,7 +69,7 @@ namespace KarlsonLevels
                     case "c":
                     case "copy":
                         LevelObject original = Level[IdToIndex(Convert.ToInt32(command[1]))];
-                        LevelObject copy = Spawn(original.prefab.ToString() , ref __instance);
+                        LevelObject copy = Spawn(original.prefab.ToString(), ref __instance);
                         copy.Object.transform.rotation = original.Object.transform.rotation;
                         copy.Object.transform.localScale = original.Object.transform.localScale;
                         break;
@@ -77,6 +78,28 @@ namespace KarlsonLevels
                         int index = IdToIndex(Convert.ToInt32(command[1]));
                         Object.Destroy(Level[index].Object);
                         Level.RemoveAt(index);
+                        break;
+                    case "steprate":
+                        if (byte.TryParse(command[1], out byte temp)) stepRate = temp;
+                        else __instance.consoleLog.text += "\nStep rate must be between 0 and 255";
+                        break;
+                    case "step":
+                        if (byte.TryParse(command[1], out temp)) step = temp;
+                        else __instance.consoleLog.text += "\nStep must be between 1 and 255";
+                        break;
+                    case "global":
+                        if (command[1] == "1") globalMov = true;
+                        else globalMov = false;
+                        break;
+                    case "ver":
+                        __instance.consoleLog.text += $"\nMangLevelLoader version {version}\nMLL File format version 2.{fileVersion}";
+                        break;
+                    case "setspawn":
+                        foreach (LevelObject lo in Level)
+                        {
+                            lo.Object.transform.position -= PlayerMovement.Instance.transform.position;
+                        }
+                        PlayerMovement.Instance.transform.position = Vector3.zero;
                         break;
                     default:
                         return true;
@@ -154,6 +177,11 @@ namespace KarlsonLevels
             bar.Id = GetId();
             bar.prefab = index;
             Level.Add(bar);
+            if (index == 129) // Removes hinge joint because it glitches movement mode in editing
+            {
+                Object.Destroy(foo.GetComponent<HingeJoint>());
+                Object.Destroy(foo.GetComponent<Rigidbody>());
+            }
             Prefabs[index].SetActive(false);
             inst.consoleLog.text += "\nSpawned object with ID " + bar.Id;
             return bar;
@@ -174,7 +202,8 @@ namespace KarlsonLevels
                     currentLevel = path;
                     byte[] data = File.ReadAllBytes(path);
                     // check magic number
-                    if (!(data[0] == 77 && data[1] == 76 && data[2] == 76 && data[3] == 50 && data[4] == 13 && data[5] == 10)) { // not a good solution but it works and im lazy
+                    if (!(data[0] == 77 && data[1] == 76 && data[2] == 76 && data[3] == 50 && data[4] == 13 && data[5] == 10))
+                    { // not a good solution but it works and im lazy
                         MelonLogger.Error("Load error: bad magic number; this might not be a level file");
                         yield break;
                     }
@@ -190,26 +219,23 @@ namespace KarlsonLevels
                     }
                     ushort objsLength = BitConverter.ToUInt16(data, 7);
                     LevelData = new LevelObjectData[objsLength];
-                    int index = 9;
-                    for (int j = 0; j < objsLength; index += 40, j++)
+                    for (int j = 0, i = 9; j < objsLength; i += 40, j++)
                     {
                         LevelObjectData lod;
-                        lod.Id = BitConverter.ToUInt16(data, index);
-                        MelonLogger.Msg(lod.Id);
-                        lod.prefab = BitConverter.ToUInt16(data, index + 2) & 0x1FFF;
-                        MelonLogger.Msg(lod.prefab);
-                        float x = BitConverter.ToSingle(data, index + 4);
-                        float y = BitConverter.ToSingle(data, index + 8);
-                        float z = BitConverter.ToSingle(data, index + 12);
+                        lod.Id = BitConverter.ToUInt16(data, i);
+                        lod.prefab = BitConverter.ToUInt16(data, i + 2) & 0x1FFF;
+                        float x = BitConverter.ToSingle(data, i + 4);
+                        float y = BitConverter.ToSingle(data, i + 8);
+                        float z = BitConverter.ToSingle(data, i + 12);
                         lod.position = new Vector3(x, y, z);
                         MelonLogger.Msg(lod.position);
-                        x = BitConverter.ToSingle(data, index + 16);
-                        y = BitConverter.ToSingle(data, index + 20);
-                        z = BitConverter.ToSingle(data, index + 24);
+                        x = BitConverter.ToSingle(data, i + 16);
+                        y = BitConverter.ToSingle(data, i + 20);
+                        z = BitConverter.ToSingle(data, i + 24);
                         lod.scale = new Vector3(x, y, z);
-                        x = BitConverter.ToSingle(data, index + 28);
-                        y = BitConverter.ToSingle(data, index + 32);
-                        z = BitConverter.ToSingle(data, index + 36);
+                        x = BitConverter.ToSingle(data, i + 28);
+                        y = BitConverter.ToSingle(data, i + 32);
+                        z = BitConverter.ToSingle(data, i + 36);
                         lod.rotation = new Vector3(x, y, z);
                         LevelData[j] = lod;
                     }
@@ -233,6 +259,9 @@ namespace KarlsonLevels
                 Quaternion q = new Quaternion();
                 q.eulerAngles = LevelData[i].rotation;
                 GameObject g = Object.Instantiate(Prefabs[LevelData[i].prefab], LevelData[i].position, q);
+                if ((LevelData[i].prefab ^ 129) == 0) {
+                    g.GetComponent<HingeJoint>().connectedBody = null;
+                }
                 g.transform.localScale = LevelData[i].scale;
                 g.SetActive(true);
                 LevelObject lo;
@@ -315,26 +344,30 @@ namespace KarlsonLevels
             __instance.consoleLog.text += $"\n\nMangLevelLoader {version}\n  edit - Enters edit mode\n  list - Lists all available prefab'd objects\n" +
                 $"  spawn (prefab) - Spawns the associated prefab and displays it's ID\n  moveobj (ID) - Makes the object movable with WASD, set to 0\nto get control" +
                 $" of the player back\n  save - Saves the level to level.mll\n  load (name) - Loads the level with the given name\n  scale (ID) - Control the scale with keyboard" +
-                $"\n  rotate (ID) - Control the rotation with keyboard\nMade by Mang432";
+                $"\n  rotate (ID) - Control the rotation with keyboard\n  step (i) - Sets the amount of units to move with each step\n  steprate (i) - Rate at which movement steps are performed,\n" +
+                $"lower is faster\n  delete (ID) - Deletes an object\n  copy (ID) - Copies an object\n  setspawn - Sets the level spawn to the current location\n  global i - Sets movement mode to" +
+                $"global if i = 1 or\n sets it relative to camera if i = 0; default is 0\n  ver - displays mod version and file format version\nMade by Mang432";
         }
     }
     [HarmonyPatch(typeof(Debug), "Fps")]
     class DataCorner
     {
+        static int selectedObj;
         static bool Prefix(Debug __instance) {
             if (!editMode) return true;
             __instance.fps.gameObject.SetActive(true);
             __instance.fps.enabled = true;
             Ray r = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
+            LevelObject lobj = new LevelObject();
             if (Physics.Raycast(r, out RaycastHit hit))
             {
                 GameObject obj = hit.collider.gameObject;
-                LevelObject lobj = new LevelObject();
-                foreach (LevelObject lo in Level)
+                for (int i = 0; i < Level.Count; i++)
                 {
-                    if (lo.Object == obj)
+                    if (Level[i].Object == obj)
                     {
-                        lobj = lo;
+                        lobj = Level[i];
+                        selectedObj = i;
                         break;
                     }
                 }
@@ -343,31 +376,36 @@ namespace KarlsonLevels
                     MelonLogger.Error("Error: object not in Level list; this is likely a glicth, please report it to Mang");
                     return false;
                 }
-                if (Input.GetButtonDown("Fire1")) {
-                    if (movableObj == 0) movableObj = lobj.Id;
-                    else movableObj = 0;
-                }
-                if (movableObj == 0)
+            }
+            else
+            {
+                lobj = Level[selectedObj];
+            }
+            if (Input.GetButtonDown("Fire1") && Time.timeScale > 0)
+            {
+                if (movableObj == 0) movableObj = lobj.Id;
+                else movableObj = 0;
+            }
+            if (movableObj == 0)
+            {
+                __instance.fps.text = $"Obj name:{lobj.Object.name}\nId no:{lobj.Id}\nPrefab:{lobj.prefab}\nPosition:{lobj.Object.transform.position}\n" +
+                    $"Scale:{lobj.Object.transform.localScale}\nRotation:{lobj.Object.transform.eulerAngles}";
+            }
+            else
+            {
+                __instance.fps.text = $"Obj name:{lobj.Object.name}\nId no:{lobj.Id}\nPrefab:{lobj.prefab}\nPosition:{lobj.Object.transform.position}\n" +
+                    $"Scale:{lobj.Object.transform.localScale}\nRotation:{lobj.Object.transform.eulerAngles}\n<b>OBJECT LOCKED</b>\n";
+                switch (MovementMode)
                 {
-                    __instance.fps.text = $"Obj name:{lobj.Object.name}\nId no:{lobj.Id}\nPrefab:{lobj.prefab}\nPosition:{lobj.Object.transform.position}\n" +
-                        $"Scale:{lobj.Object.transform.localScale}\nRotation:{lobj.Object.transform.eulerAngles}";
-                }
-                else
-                {
-                    __instance.fps.text = $"Obj name:{lobj.Object.name}\nId no:{lobj.Id}\nPrefab:{lobj.prefab}\nPosition:{lobj.Object.transform.position}\n" +
-                        $"Scale:{lobj.Object.transform.localScale}\nRotation:{lobj.Object.transform.eulerAngles}\n<b>OBJECT LOCKED</b>\n";
-                    switch (MovementMode)
-                    {
-                        case MoveModeEnum.movement:
-                            __instance.fps.text += "Movement mode";
-                            break;
-                        case MoveModeEnum.scale:
-                            __instance.fps.text += "Scale mode";
-                            break;
-                        case MoveModeEnum.rotation:
-                            __instance.fps.text += "Rotation mode";
-                            break;
-                    }
+                    case MoveModeEnum.movement:
+                        __instance.fps.text += "Movement mode";
+                        break;
+                    case MoveModeEnum.scale:
+                        __instance.fps.text += "Scale mode";
+                        break;
+                    case MoveModeEnum.rotation:
+                        __instance.fps.text += "Rotation mode";
+                        break;
                 }
             }
             return false;
