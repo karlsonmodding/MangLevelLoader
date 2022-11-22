@@ -1,6 +1,24 @@
 All dates are in DD/MM/YY format
 Versions follow SemVer
 
+0.3.1 (27/10/22)
+ - Added hotkeys for easier map editting (number keys 1, 2 and 3).
+ - Added object locking (needed to use hotkeys) by left clicking on an object.
+ - Added "s", "c" and "d" as aliases for "spawn", "copy" and "delete" respectively.
+
+0.3.0 (22/10/22)
+ - Added object info to the top left corner
+ - Added "delete" command
+
+0.2.2 (12/10/22)
+ - Fixed weapons glitch
+ - Fixed editing existing levels glitch
+
+0.2.0 (09/10/22)
+ - Increased initialization speed
+ - Changed the file format to a more efficient and accurate binary format.
+ - Dropped compatibility with levels created in older versions
+
 0.1.3 (08/10/22)
  - The "q" and "e" keys are now used for height.
  - Added "scale" command.
