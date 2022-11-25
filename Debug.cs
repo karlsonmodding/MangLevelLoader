@@ -19,52 +19,13 @@ namespace KarlsonLevels
     {
         const string magic = "MLL2\r\n";
         const byte fileVersion = 0;
-        public static byte step = 1, stepRate;
+        public static float step = 0.05f;
         static bool Prefix(Debug __instance) {
             string[] command = __instance.console.text.Split(' ');
             try
             {
                 switch (command[0].ToLower())
                 {
-                    case "edit":
-                        if (command.Length != 1)
-                        {
-                            MelonCoroutines.Start(NewLoad(Path.Combine(Directory.GetCurrentDirectory(), "Levels", command[1] +".mll")));
-                            MelonCoroutines.Start(StartEdit(command[1]));
-                        }
-                        else MelonCoroutines.Start(StartEdit(null));
-                        break;
-                    case "list":
-                        for (int i = 0; i < Prefabs.Length; i++)
-                        {
-                            MelonLogger.Msg(i + " " + Prefabs[i].name);
-                        }
-                        break;
-                    case "s":
-                    case "spawn":
-                        Spawn(command[1], ref __instance);
-                        break;
-                    case "save":
-                        if (command.Length > 1) NewSave(command[1]);
-                        else NewSave(); // don't pass null for predefined argument
-                        break;
-                    case "upload":
-                    { // inside a block to protect variable double-declaring
-                        string name = "Untitled Level";
-                        if (command.Length > 1) name = command[1];
-                        // make screenshot
-                        byte[] thumbnail = MakeScreenshot();
-                        Core.UploadLevel(new WML_Convert.WML(name, thumbnail, SaveLevelBytes()));
-                        break;
-                    }
-                    case "load":
-                        string path = null;
-                        if (command.Length != 1)
-                        {
-                            path = Path.Combine(Directory.GetCurrentDirectory(), "Levels", command[1] + ".mll");
-                        }
-                        MelonCoroutines.Start(NewLoad(path));
-                        break;
                     case "moveobj":
                         movableObj = Convert.ToInt32(command[1]);
                         MovementMode = MoveModeEnum.movement;
@@ -76,41 +37,6 @@ namespace KarlsonLevels
                     case "scale":
                         movableObj = Convert.ToInt32(command[1]);
                         MovementMode = MoveModeEnum.scale;
-                        break;
-                    case "c":
-                    case "copy":
-                        LevelObject original = Level[IdToIndex(Convert.ToInt32(command[1]))];
-                        LevelObject copy = Spawn(original.prefab.ToString(), ref __instance);
-                        copy.Object.transform.rotation = original.Object.transform.rotation;
-                        copy.Object.transform.localScale = original.Object.transform.localScale;
-                        break;
-                    case "d":
-                    case "delete":
-                        int index = IdToIndex(Convert.ToInt32(command[1]));
-                        Object.Destroy(Level[index].Object);
-                        Level.RemoveAt(index);
-                        break;
-                    case "steprate":
-                        if (byte.TryParse(command[1], out byte temp)) stepRate = temp;
-                        else __instance.consoleLog.text += "\nStep rate must be between 0 and 255";
-                        break;
-                    case "step":
-                        if (byte.TryParse(command[1], out temp)) step = temp;
-                        else __instance.consoleLog.text += "\nStep must be between 1 and 255";
-                        break;
-                    case "global":
-                        if (command[1] == "1") globalMov = true;
-                        else globalMov = false;
-                        break;
-                    case "ver":
-                        __instance.consoleLog.text += $"\nMangLevelLoader version {version}\nMLL File format version 2.{fileVersion}";
-                        break;
-                    case "setspawn":
-                        foreach (LevelObject lo in Level)
-                        {
-                            lo.Object.transform.position -= PlayerMovement.Instance.transform.position;
-                        }
-                        PlayerMovement.Instance.transform.position = Vector3.zero;
                         break;
                     default:
                         return true;
@@ -204,7 +130,7 @@ namespace KarlsonLevels
             File.WriteAllLines(Path.Combine(Directory.GetCurrentDirectory(), "Levels", "level.mll"), lines, Encoding.ASCII);
         }
 
-        static LevelObject Spawn(string obj, ref Debug inst) {
+        public static LevelObject Spawn(string obj) {
             int index = Convert.ToInt32(obj);
             Prefabs[index].SetActive(true);
             GameObject foo = Object.Instantiate(Prefabs[index], PlayerMovement.Instance.gameObject.transform.position, Quaternion.identity);
@@ -219,7 +145,6 @@ namespace KarlsonLevels
                 Object.Destroy(foo.GetComponent<Rigidbody>());
             }
             Prefabs[index].SetActive(false);
-            inst.consoleLog.text += "\nSpawned object with ID " + bar.Id;
             return bar;
         }
 
@@ -353,7 +278,7 @@ namespace KarlsonLevels
             }
         }
 
-        static IEnumerator StartEdit(string path) {
+        public static IEnumerator StartEdit(string path) {
             if (path == null)
             {
                 Level = new List<LevelObject>();
@@ -365,13 +290,13 @@ namespace KarlsonLevels
             try
             {
                 editMode = true;
+                Main.movableObj = -1;
                 PlayerMovement.Instance.gameObject.GetComponent<Rigidbody>().isKinematic = false;
                 PlayerMovement.Instance.gameObject.GetComponent<Rigidbody>().useGravity = false; //eh
                 PlayerMovement.Instance.gameObject.GetComponent<Collider>().enabled = false;
-                if (path == null) foreach (Collider c in Object.FindObjectsOfType<Collider>())
-                    {
+                if (path == null)
+                    foreach (Collider c in Object.FindObjectsOfType<Collider>()) 
                         if (c.gameObject != PlayerMovement.Instance.gameObject) DestroyObject.Destroy(c.gameObject);
-                    }
             }
             catch (Exception e)
             {
@@ -391,68 +316,6 @@ namespace KarlsonLevels
                 $"global if i = 1 or\n sets it relative to camera if i = 0; default is 0\n  ver - displays mod version and file format version\nMade by Mang432";
         }
     }
-    [HarmonyPatch(typeof(Debug), "Fps")]
-    class Debug_Fps
-    {
-        static int selectedObj;
-        static bool Prefix(Debug __instance) {
-            if (!editMode) return true;
-            __instance.fps.gameObject.SetActive(true);
-            __instance.fps.enabled = true;
-            Ray r = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
-            LevelObject lobj = new LevelObject();
-            if (Physics.Raycast(r, out RaycastHit hit))
-            {
-                GameObject obj = hit.collider.gameObject;
-                for (int i = 0; i < Level.Count; i++)
-                {
-                    if (Level[i].Object == obj)
-                    {
-                        lobj = Level[i];
-                        selectedObj = i;
-                        break;
-                    }
-                }
-                if (lobj.Object == null)
-                {
-                    MelonLogger.Error("Error: object not in Level list; this is likely a glicth, please report it to Mang");
-                    return false;
-                }
-            }
-            else
-            {
-                lobj = Level[selectedObj];
-            }
-            if (Input.GetButtonDown("Fire1") && Time.timeScale > 0)
-            {
-                if (movableObj == 0) movableObj = lobj.Id;
-                else movableObj = 0;
-            }
-            if (movableObj == 0)
-            {
-                __instance.fps.text = $"Obj name:{lobj.Object.name}\nId no:{lobj.Id}\nPrefab:{lobj.prefab}\nPosition:{lobj.Object.transform.position}\n" +
-                    $"Scale:{lobj.Object.transform.localScale}\nRotation:{lobj.Object.transform.eulerAngles}";
-            }
-            else
-            {
-                __instance.fps.text = $"Obj name:{lobj.Object.name}\nId no:{lobj.Id}\nPrefab:{lobj.prefab}\nPosition:{lobj.Object.transform.position}\n" +
-                    $"Scale:{lobj.Object.transform.localScale}\nRotation:{lobj.Object.transform.eulerAngles}\n<b>OBJECT LOCKED</b>\n";
-                switch (MovementMode)
-                {
-                    case MoveModeEnum.movement:
-                        __instance.fps.text += "Movement mode";
-                        break;
-                    case MoveModeEnum.scale:
-                        __instance.fps.text += "Scale mode";
-                        break;
-                    case MoveModeEnum.rotation:
-                        __instance.fps.text += "Rotation mode";
-                        break;
-                }
-            }
-            return false;
-        }
-    }
 
     public static class Extensions
     {
@@ -461,5 +324,11 @@ namespace KarlsonLevels
                         .Take(length)
                         .ToArray();
         }
+    }
+
+    [HarmonyPatch(typeof(Debug), "OpenConsole")]
+    public class Debug_OpenConsole
+    {
+        public static bool Prefix() => !editMode;
     }
 }

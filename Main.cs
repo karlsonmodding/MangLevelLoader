@@ -21,7 +21,7 @@ namespace KarlsonLevels
 		public static LevelObjectData[] LevelData;
 		public static bool editMode;
 		public static MoveModeEnum MovementMode;
-		public static int movableObj; // Id of the object that's currently in control, only applicable in edit mode
+		public static int movableObj = -1; // Id of the object that's currently in control, only applicable in edit mode
 		public static bool globalMov;
 		public static byte[] currentLevel = new byte[0];
 		public static string currentLevelName = "";
@@ -171,6 +171,7 @@ namespace KarlsonLevels
         public override void OnGUI()
         {
             Workshop_API.WorkshopGUI._OnGUI();
+			EditorGUI._OnGUI();
         }
 
         public override void OnApplicationStart()
