@@ -1,6 +1,12 @@
 All dates are in DD/MM/YY format
 Versions follow SemVer
 
+0.4.1 (25/11/22)
+ - Added Editor GUI, which ported all of the console commands
+ - Added Level Object Browser to see all the level objects
+ - Added Identify and Find functions to find level objects
+ - Removed console commands and help
+
 0.4.0 (25/11/22)
  - Added workshop
  - Added custom level browser

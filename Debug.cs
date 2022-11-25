@@ -14,44 +14,11 @@ using KarlsonLevels.Workshop_API;
 
 namespace KarlsonLevels
 {
-    [HarmonyPatch(typeof(Debug), "RunCommand")]
     class Editor
     {
         const string magic = "MLL2\r\n";
         const byte fileVersion = 0;
         public static float step = 0.05f;
-        static bool Prefix(Debug __instance) {
-            string[] command = __instance.console.text.Split(' ');
-            try
-            {
-                switch (command[0].ToLower())
-                {
-                    case "moveobj":
-                        movableObj = Convert.ToInt32(command[1]);
-                        MovementMode = MoveModeEnum.movement;
-                        break;
-                    case "rotate":
-                        movableObj = Convert.ToInt32(command[1]);
-                        MovementMode = MoveModeEnum.rotation;
-                        break;
-                    case "scale":
-                        movableObj = Convert.ToInt32(command[1]);
-                        MovementMode = MoveModeEnum.scale;
-                        break;
-                    default:
-                        return true;
-                }
-            }
-            catch (Exception e)
-            {
-                MelonLogger.Error(e.Message);
-                MelonLogger.Error(e.StackTrace);
-            }
-            __instance.console.text = "";
-            __instance.console.Select();
-            __instance.console.ActivateInputField();
-            return false;
-        }
 
         public static void NewSave(string name = "level") {
             File.WriteAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "Levels", name + ".mll"), SaveLevelBytes());
@@ -302,18 +269,6 @@ namespace KarlsonLevels
             {
                 MelonLogger.Error("Player instance error! " + e.StackTrace);
             }
-        }
-    }
-    [HarmonyPatch(typeof(Debug), "Help")]
-    class Debug_Help
-    {
-        static void Postfix(Debug __instance) {
-            __instance.consoleLog.text += $"\n\nMangLevelLoader {version}\n  edit - Enters edit mode\n  list - Lists all available prefab'd objects\n" +
-                $"  spawn (prefab) - Spawns the associated prefab and displays it's ID\n  moveobj (ID) - Makes the object movable with WASD, set to 0\nto get control" +
-                $" of the player back\n  save - Saves the level to level.mll\n  upload (name) - Upload the level to the Workshop.\n    There will be a screnshot taken of your camera,\n    so choose your location and your fov.\n  load (name) - Loads the level with the given name\n  scale (ID) - Control the scale with keyboard" +
-                $"\n  rotate (ID) - Control the rotation with keyboard\n  step (i) - Sets the amount of units to move with each step\n  steprate (i) - Rate at which movement steps are performed,\n" +
-                $"lower is faster\n  delete (ID) - Deletes an object\n  copy (ID) - Copies an object\n  setspawn - Sets the level spawn to the current location\n  global i - Sets movement mode to" +
-                $"global if i = 1 or\n sets it relative to camera if i = 0; default is 0\n  ver - displays mod version and file format version\nMade by Mang432";
         }
     }
 
