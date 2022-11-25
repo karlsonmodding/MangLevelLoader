@@ -385,7 +385,7 @@ namespace KarlsonLevels
         static void Postfix(Debug __instance) {
             __instance.consoleLog.text += $"\n\nMangLevelLoader {version}\n  edit - Enters edit mode\n  list - Lists all available prefab'd objects\n" +
                 $"  spawn (prefab) - Spawns the associated prefab and displays it's ID\n  moveobj (ID) - Makes the object movable with WASD, set to 0\nto get control" +
-                $" of the player back\n  save - Saves the level to level.mll\n  load (name) - Loads the level with the given name\n  scale (ID) - Control the scale with keyboard" +
+                $" of the player back\n  save - Saves the level to level.mll\n  upload (name) - Upload the level to the Workshop.\n    There will be a screnshot taken of your camera,\n    so choose your location and your fov.\n  load (name) - Loads the level with the given name\n  scale (ID) - Control the scale with keyboard" +
                 $"\n  rotate (ID) - Control the rotation with keyboard\n  step (i) - Sets the amount of units to move with each step\n  steprate (i) - Rate at which movement steps are performed,\n" +
                 $"lower is faster\n  delete (ID) - Deletes an object\n  copy (ID) - Copies an object\n  setspawn - Sets the level spawn to the current location\n  global i - Sets movement mode to" +
                 $"global if i = 1 or\n sets it relative to camera if i = 0; default is 0\n  ver - displays mod version and file format version\nMade by Mang432";

@@ -5,6 +5,7 @@ Versions follow SemVer
  - Added workshop
  - Added custom level browser
  - Added "upload" command that allows to upload to the workshop
+ - Added Discord Rich Presence
  - Removed NEXT button for custom levels
  - Fixed RETRY button not working on normal levels glitch
 
