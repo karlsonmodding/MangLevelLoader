@@ -1,6 +1,4 @@
-﻿using Harmony;
-using MelonLoader;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +6,11 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using MelonLoader;
+using HarmonyLib;
+
 using static KarlsonLevels.Main;
+using KarlsonLevels.Workshop_API;
 
 namespace KarlsonLevels
 {
@@ -27,7 +29,7 @@ namespace KarlsonLevels
                     case "edit":
                         if (command.Length != 1)
                         {
-                            MelonCoroutines.Start(NewLoad($"{Directory.GetCurrentDirectory()}\\Levels\\{command[1]}.mll"));
+                            MelonCoroutines.Start(NewLoad(Path.Combine(Directory.GetCurrentDirectory(), "Levels", command[1] +".mll")));
                             MelonCoroutines.Start(StartEdit(command[1]));
                         }
                         else MelonCoroutines.Start(StartEdit(null));
@@ -44,13 +46,27 @@ namespace KarlsonLevels
                         break;
                     case "save":
                         if (command.Length > 1) NewSave(command[1]);
-                        else NewSave(null);
+                        else NewSave(); // don't pass null for predefined argument
                         break;
+                    case "upload":
+                    { // inside a block to protect variable double-declaring
+                        string name = "Untitled Level";
+                        if (command.Length > 1) name = command[1];
+                        // make screenshot
+                        byte[] thumbnail = MakeScreenshot();
+                        Core.UploadLevel(new WML_Convert.WML(name, thumbnail, SaveLevelBytes()));
+                        break;
+                    }
+                    case "ss":
+                    {
+                        File.WriteAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "test.png"), MakeScreenshot());
+                        break;
+                    }
                     case "load":
                         string path = null;
                         if (command.Length != 1)
                         {
-                            path = $"{Directory.GetCurrentDirectory()}\\Levels\\{command[1]}.mll";
+                            path = Path.Combine(Directory.GetCurrentDirectory(), "Levels", command[1] + ".mll");
                         }
                         MelonCoroutines.Start(NewLoad(path));
                         break;
@@ -117,6 +133,11 @@ namespace KarlsonLevels
         }
 
         public static void NewSave(string name = "level") {
+            File.WriteAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "Levels", name + ".mll"), SaveLevelBytes());
+        }
+
+        public static byte[] SaveLevelBytes()
+        {
             MelonLogger.Msg(Level.Count);
             LevelData = new LevelObjectData[Level.Count];
             for (int i = 0; i < LevelData.Length; i++)
@@ -144,7 +165,27 @@ namespace KarlsonLevels
                 ListAdd(ref save, lod.rotation);
             }
             ListAdd(ref save, Hash(save.ToArray()));
-            File.WriteAllBytes(Directory.GetCurrentDirectory() + $"\\Levels\\{name}.mll", save.ToArray());
+            return save.ToArray();
+        }
+
+        public static byte[] MakeScreenshot()
+        {
+            GameObject GOcam = new GameObject("Screenshot Camera");
+            Camera cam = GOcam.AddComponent<Camera>();
+            cam.fieldOfView = Camera.main.fieldOfView;
+            GOcam.transform.position = Camera.main.transform.position;
+            GOcam.transform.rotation = Camera.main.transform.rotation;
+            RenderTexture rt = new RenderTexture(177, 100, 24);
+            cam.targetTexture = rt;
+            Texture2D screenShot = new Texture2D(177, 100, TextureFormat.RGB24, false);
+            cam.Render();
+            RenderTexture.active = rt;
+            screenShot.ReadPixels(new Rect(0, 0, 177, 100), 0, 0);
+            cam.targetTexture = null;
+            RenderTexture.active = null;
+            UnityEngine.Object.Destroy(rt);
+            UnityEngine.Object.Destroy(GOcam);
+            return screenShot.EncodeToPNG();
         }
 
         static void Save() {
@@ -165,7 +206,7 @@ namespace KarlsonLevels
                 int j = i - 1;
                 lines[i] = $"{LevelData[j].Id};{LevelData[j].prefab};{LevelData[j].position.ToString()};{LevelData[j].scale};{LevelData[j].rotation.ToString()};";
             }
-            File.WriteAllLines(Directory.GetCurrentDirectory() + "\\Levels\\level.mll", lines, Encoding.ASCII);
+            File.WriteAllLines(Path.Combine(Directory.GetCurrentDirectory(), "Levels", "level.mll"), lines, Encoding.ASCII);
         }
 
         static LevelObject Spawn(string obj, ref Debug inst) {
@@ -194,13 +235,19 @@ namespace KarlsonLevels
             return foo;
         }
 
-        public static IEnumerator NewLoad(string path) {
+        public static IEnumerator NewLoad(string path)
+        {
+            byte[] data = File.ReadAllBytes(path);
+            return NewLoad(data, Path.GetFileName(path));
+        }
+
+        public static IEnumerator NewLoad(byte[] data, string levelName) {
             try
             {
-                if (path != null)
+                if (data != null && data.Length > 0)
                 {
-                    currentLevel = path;
-                    byte[] data = File.ReadAllBytes(path);
+                    currentLevel = data;
+                    currentLevelName = levelName;
                     // check magic number
                     if (!(data[0] == 77 && data[1] == 76 && data[2] == 76 && data[3] == 50 && data[4] == 13 && data[5] == 10))
                     { // not a good solution but it works and im lazy
@@ -338,7 +385,7 @@ namespace KarlsonLevels
         }
     }
     [HarmonyPatch(typeof(Debug), "Help")]
-    class Help1
+    class Debug_Help
     {
         static void Postfix(Debug __instance) {
             __instance.consoleLog.text += $"\n\nMangLevelLoader {version}\n  edit - Enters edit mode\n  list - Lists all available prefab'd objects\n" +
@@ -350,7 +397,7 @@ namespace KarlsonLevels
         }
     }
     [HarmonyPatch(typeof(Debug), "Fps")]
-    class DataCorner
+    class Debug_Fps
     {
         static int selectedObj;
         static bool Prefix(Debug __instance) {

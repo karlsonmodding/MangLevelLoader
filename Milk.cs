@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Harmony;
-
+﻿using HarmonyLib;
 
 namespace KarlsonLevels
 {
     [HarmonyPatch(typeof(Milk), "OnTriggerEnter")]
-    class MilkPatch
+    class Milk_OnTriggerEnter
     {
         static bool Prefix() {
             return !Main.editMode;

@@ -1,10 +1,10 @@
-﻿using Harmony;
-using UnityEngine;
+﻿using UnityEngine;
+using HarmonyLib;
 
 namespace KarlsonLevels
 {
     [HarmonyPatch(typeof(PlayerMovement), "Movement")]
-    class PlayerMovementPatch
+    class PlayerMovement_Movement
     {
         static byte stepRateCounter;
         static bool Prefix(PlayerMovement __instance) {

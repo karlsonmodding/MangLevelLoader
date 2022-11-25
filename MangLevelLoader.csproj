@@ -45,6 +45,9 @@
     <Reference Include="MelonLoader">
       <HintPath>lib\MelonLoader.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.13.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -57,30 +60,73 @@
     <Reference Include="Unity.TextMeshPro">
       <HintPath>lib\Unity.TextMeshPro.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.CoreModule">
+    <Reference Include="UnityEngine">
+      <HintPath>lib\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>lib\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.InputLegacyModule">
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>lib\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>lib\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>lib\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.InputModule">
+    <Reference Include="UnityEngine.InputModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>lib\UnityEngine.InputModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>lib\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>lib\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="7z\Common\CommandLineParser.cs" />
+    <Compile Include="7z\Common\CRC.cs" />
+    <Compile Include="7z\Common\InBuffer.cs" />
+    <Compile Include="7z\Common\OutBuffer.cs" />
+    <Compile Include="7z\Compress\LZMA\LzmaBase.cs" />
+    <Compile Include="7z\Compress\LZMA\LzmaDecoder.cs" />
+    <Compile Include="7z\Compress\LZMA\LzmaEncoder.cs" />
+    <Compile Include="7z\Compress\LZ\IMatchFinder.cs" />
+    <Compile Include="7z\Compress\LZ\LzBinTree.cs" />
+    <Compile Include="7z\Compress\LZ\LzInWindow.cs" />
+    <Compile Include="7z\Compress\LZ\LzOutWindow.cs" />
+    <Compile Include="7z\Compress\RangeCoder\RangeCoder.cs" />
+    <Compile Include="7z\Compress\RangeCoder\RangeCoderBit.cs" />
+    <Compile Include="7z\Compress\RangeCoder\RangeCoderBitTree.cs" />
+    <Compile Include="7z\ICoder.cs" />
+    <Compile Include="7z\SevenZipHelper.cs" />
     <Compile Include="Debug.cs" />
+    <Compile Include="Discord API\ActivityManager.cs" />
+    <Compile Include="Discord API\Constants.cs" />
+    <Compile Include="Discord API\Core.cs" />
     <Compile Include="Game.cs" />
+    <Compile Include="LevelTimeDB.cs" />
     <Compile Include="Lobby.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Milk.cs" />
     <Compile Include="PlayerMovement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Workshop API\Core.cs" />
+    <Compile Include="Workshop API\WML_Convert.cs" />
+    <Compile Include="Workshop API\WorkshopCache.cs" />
+    <Compile Include="Workshop API\WorkshopGUI.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,12 +1,13 @@
-﻿using MelonLoader;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
+using MelonLoader;
+using MonoMod.RuntimeDetour.Platforms;
+using System.Runtime.InteropServices;
 
 [assembly: MelonInfo(typeof(KarlsonLevels.Main), "MangLevelLoader", KarlsonLevels.Main.version + "-beta", "Mang432")]
 [assembly: MelonGame("Dani", "Karlson")]
@@ -22,7 +23,8 @@ namespace KarlsonLevels
 		public static MoveModeEnum MovementMode;
 		public static int movableObj; // Id of the object that's currently in control, only applicable in edit mode
 		public static bool globalMov;
-		public static string currentLevel;
+		public static byte[] currentLevel = new byte[0];
+		public static string currentLevelName = "";
 		public const string version = "0.3.3";
 		public override void OnSceneWasInitialized(int buildIndex, string sceneName) {
 			base.OnSceneWasInitialized(buildIndex, sceneName);
@@ -30,8 +32,9 @@ namespace KarlsonLevels
 			if (buildIndex == 1 && !initialized)
 			{
 				initialized = true;
-				Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\Levels");
-				MelonCoroutines.Start(PrefabInitializer());
+                Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "Levels"));
+                Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "Levels", "Workshop"));
+                MelonCoroutines.Start(PrefabInitializer());
 			}
 		}
 
@@ -143,5 +146,81 @@ namespace KarlsonLevels
 			public Vector3 scale, position, rotation;
 			public int Id, prefab;
 		}
-	}
+
+
+		public const long CLIENT_ID = 1045056967242170388;
+		private static string temp_accessToken = "";
+		public static Discord.Discord discord;
+		public static Discord.User currentUser = new Discord.User
+		{
+			Id = -1
+		};
+        public static Discord.Activity activity;
+
+		public static List<Action> runOnMain = new List<Action>();
+        public override void OnUpdate()
+        {
+            discord.RunCallbacks();
+			if(runOnMain.Count > 0)
+			{ // once at a time, not to overload
+				runOnMain[0]();
+				runOnMain.RemoveAt(0);
+			}
+        }
+
+        public override void OnGUI()
+        {
+            Workshop_API.WorkshopGUI._OnGUI();
+        }
+
+        public override void OnApplicationStart()
+		{
+			LevelTimeDB.Load();
+            discord = new Discord.Discord(CLIENT_ID, (ulong)Discord.CreateFlags.Default);
+            var applicationManager = discord.GetApplicationManager();
+            applicationManager.GetOAuth2Token((Discord.Result result, ref Discord.OAuth2Token token) =>
+            {
+                if (result != Discord.Result.Ok)
+				{
+					// TODO: replace with dialog
+					MelonLogger.Msg("Couldn't connect to discord, please try again later.");
+					return;
+				}
+				temp_accessToken = token.AccessToken;
+			});
+			var activityManager = discord.GetActivityManager();
+			activity = new Discord.Activity
+			{
+				ApplicationId = CLIENT_ID,
+				Assets =
+				{
+					LargeImage = "mllw_pfp",
+					LargeText = "MLL Version " + version
+				},
+				Details = "Made by devilExE and Mang",
+				Timestamps =
+				{
+					Start = (long)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds
+				}
+			};
+			activityManager.UpdateActivity(activity, (result) =>
+            {
+                if (result != Discord.Result.Ok)
+                    MelonLogger.Msg("Couldn't update discord RPC");
+            });
+			var userManager = discord.GetUserManager();
+            userManager.OnCurrentUserUpdate += UserManager_OnCurrentUserUpdate;
+        }
+
+        public static string sessionToken = "";
+		public static List<int> likedLevels = new List<int>();
+        private static void UserManager_OnCurrentUserUpdate()
+        {
+			currentUser = discord.GetUserManager().GetCurrentUser();
+			int[] liked;
+            (sessionToken, liked) = Workshop_API.Core.Login(currentUser.Id, temp_accessToken);
+			if(liked.Length > 0)
+				likedLevels.AddRange(liked);
+        }
+    }
 }

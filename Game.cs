@@ -1,17 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Harmony;
-using MelonLoader;
+﻿using MelonLoader;
+using HarmonyLib;
+
 namespace KarlsonLevels
 {
     [HarmonyPatch(typeof(Game), "RestartGame")]
-    class RestartGame
+    class Game_RestartGame
     {
         static void Prefix() {
-            MelonCoroutines.Start(Editor.NewLoad(null));
+            if (Main.currentLevelName == "") return;
+            MelonCoroutines.Start(Editor.NewLoad(new byte[0], ""));
+        }
+    }
+
+    [HarmonyPatch(typeof(Game), "MainMenu")]
+    class Game_MainMenu
+    {
+        static void Postfix() {
+            Main.currentLevelName = "";
+            Main.currentLevel = new byte[0];
         }
     }
 }
