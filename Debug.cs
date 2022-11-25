@@ -19,7 +19,7 @@ namespace KarlsonLevels
     {
         const string magic = "MLL2\r\n";
         const byte fileVersion = 0;
-        public static byte step = 1, stepRate;
+        public static float step = 0.05f;
         static bool Prefix(Debug __instance) {
             string[] command = __instance.console.text.Split(' ');
             try
@@ -37,19 +37,6 @@ namespace KarlsonLevels
                     case "scale":
                         movableObj = Convert.ToInt32(command[1]);
                         MovementMode = MoveModeEnum.scale;
-                        break;
-                    /*case "c":
-                    case "copy":
-                        LevelObject original = Level[IdToIndex(Convert.ToInt32(command[1]))];
-                        LevelObject copy = Spawn(original.prefab.ToString(), ref __instance);
-                        copy.Object.transform.rotation = original.Object.transform.rotation;
-                        copy.Object.transform.localScale = original.Object.transform.localScale;
-                        break;*/
-                    case "d":
-                    case "delete":
-                        int index = IdToIndex(Convert.ToInt32(command[1]));
-                        Object.Destroy(Level[index].Object);
-                        Level.RemoveAt(index);
                         break;
                     default:
                         return true;
@@ -303,6 +290,7 @@ namespace KarlsonLevels
             try
             {
                 editMode = true;
+                Main.movableObj = -1;
                 PlayerMovement.Instance.gameObject.GetComponent<Rigidbody>().isKinematic = false;
                 PlayerMovement.Instance.gameObject.GetComponent<Rigidbody>().useGravity = false; //eh
                 PlayerMovement.Instance.gameObject.GetComponent<Collider>().enabled = false;
