@@ -57,11 +57,6 @@ namespace KarlsonLevels
                         Core.UploadLevel(new WML_Convert.WML(name, thumbnail, SaveLevelBytes()));
                         break;
                     }
-                    case "ss":
-                    {
-                        File.WriteAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "test.png"), MakeScreenshot());
-                        break;
-                    }
                     case "load":
                         string path = null;
                         if (command.Length != 1)

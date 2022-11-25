@@ -25,7 +25,7 @@ namespace KarlsonLevels
 		public static bool globalMov;
 		public static byte[] currentLevel = new byte[0];
 		public static string currentLevelName = "";
-		public const string version = "0.3.3";
+		public const string version = "0.4.0";
 		public override void OnSceneWasInitialized(int buildIndex, string sceneName) {
 			base.OnSceneWasInitialized(buildIndex, sceneName);
 			editMode = false;

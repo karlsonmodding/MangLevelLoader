@@ -1,6 +1,13 @@
 All dates are in DD/MM/YY format
 Versions follow SemVer
 
+0.4.0 (25/11/22)
+ - Added workshop
+ - Added custom level browser
+ - Added "upload" command that allows to upload to the workshop
+ - Removed NEXT button for custom levels
+ - Fixed RETRY button not working on normal levels glitch
+
 0.3.1 (27/10/22)
  - Added hotkeys for easier map editting (number keys 1, 2 and 3).
  - Added object locking (needed to use hotkeys) by left clicking on an object.
