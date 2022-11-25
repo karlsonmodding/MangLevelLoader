@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using KarlsonLevels.Workshop_API;
+using MelonLoader;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -101,6 +102,16 @@ namespace KarlsonLevels
             ((TextMeshProUGUI)workshop.GetComponent<Button>().targetGraphic).rectTransform.localScale = new Vector3(5f, 0.8255f, 0.8255f);
             ((TextMeshProUGUI)workshop.GetComponent<Button>().targetGraphic).rectTransform.sizeDelta = new Vector2(300, 30);
             workshop.name = "Workshop";
+            GameObject editor = UnityEngine.Object.Instantiate(GO_LevelsUI.transform.Find("Back").gameObject);
+            editor.transform.parent = GO_LevelsUI.transform;
+            ((TextMeshProUGUI)editor.GetComponent<Button>().targetGraphic).text = "editor";
+            editor.transform.position = new Vector3(-7.9997f, 9.2008f, 183.988f);
+            editor.transform.rotation = Quaternion.Euler(0f, -90f, 0f);
+            // weird double scaling and resizing hitbox fix, idk how i even figured this out
+            editor.transform.localScale = new Vector3(0.1352f, 0.8195f, 0.8195f);
+            ((TextMeshProUGUI)editor.GetComponent<Button>().targetGraphic).rectTransform.localScale = new Vector3(5f, 0.8255f, 0.8255f);
+            ((TextMeshProUGUI)editor.GetComponent<Button>().targetGraphic).rectTransform.sizeDelta = new Vector2(300, 30);
+            editor.name = "Editor";
 
             currentPage.transform.position = new Vector3(-7.9997f, 20.2474f, 191.691f);
             currentPage.transform.rotation = Quaternion.Euler(0f, -90f, 0f);
@@ -111,7 +122,8 @@ namespace KarlsonLevels
 
             InterceptButton(prevPage.GetComponent<Button>(), () => RenderMenuPage(menuPage - 1));
             InterceptButton(nextPage.GetComponent<Button>(), () => RenderMenuPage(menuPage + 1));
-            InterceptButton(workshop.GetComponent<Button>(), () => Workshop_API.WorkshopGUI.OpenWorkshop());
+            InterceptButton(workshop.GetComponent<Button>(), () => WorkshopGUI.OpenWorkshop());
+            InterceptButton(editor.GetComponent<Button>(), () => MelonCoroutines.Start(Editor.StartEdit(null)));
 
             InterceptButton(GO_Levels.GetComponent<Button>(), () =>
             {
@@ -148,7 +160,7 @@ namespace KarlsonLevels
             GameObject.Find("/UI/Custom/CurrentPage").GetComponent<TextMeshProUGUI>().text = page.ToString();
 
             // clear old levels
-            for(int i = 5; i < GameObject.Find("/UI/Custom").transform.childCount; i++)
+            for(int i = 6; i < GameObject.Find("/UI/Custom").transform.childCount; i++)
                 UnityEngine.Object.Destroy(GameObject.Find("/UI/Custom").transform.GetChild(i).gameObject);
 
             List<string> l = new List<string>();

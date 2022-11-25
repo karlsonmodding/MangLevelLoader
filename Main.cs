@@ -171,6 +171,7 @@ namespace KarlsonLevels
         public override void OnGUI()
         {
             Workshop_API.WorkshopGUI._OnGUI();
+			EditorGUI._OnGUI();
         }
 
         public override void OnApplicationStart()
