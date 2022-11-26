@@ -14,8 +14,8 @@ namespace KarlsonLevels
         static void Postfix()
         {
             if (Main.editMode) return;
-            if (Main.currentLevelName != "") UIManger.Instance.winUI.transform.Find("NextBtn").gameObject.SetActive(false);
-            else UIManger.Instance.winUI.transform.Find("NextBtn").gameObject.SetActive(true);
+            if (Main.currentLevelName != "") UIManger.Instance.winUI.transform.Find("NextBtn").gameObject.GetComponent<Button>().interactable = false;
+            else UIManger.Instance.winUI.transform.Find("NextBtn").gameObject.GetComponent<Button>().interactable = true;
         }
     }
 }

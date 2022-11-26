@@ -1,6 +1,16 @@
 All dates are in DD/MM/YY format
 Versions follow SemVer
 
+0.4.2
+ - Added Gizmo (shows XYZ axis directions)
+ - Added current camera pos/rot
+ - Added object browser
+ - Added sirty's cheat sheet in object browser
+ - Changed object id limit to 50000
+ - Disabled spawning of Player/DetectWeapons
+ - Fixed unable to type decimal at numeric values
+ - Fixed null reference bug on deleting all objects in a level
+
 0.4.1 (25/11/22)
  - Added Editor GUI, which ported all of the console commands
  - Added Level Object Browser to see all the level objects

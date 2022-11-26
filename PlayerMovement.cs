@@ -56,7 +56,7 @@ namespace KarlsonLevels
     [HarmonyPatch(typeof(PlayerMovement), "Update")]
     public class PlayerMovement_Update
     {
-        public static bool Prefix() => Main.editMode && Input.GetButton("Fire2") || !Main.editMode || Main.editMode && EditorGUI.dg_screenshot;
+        public static bool Prefix() => !Main.editMode || Main.editMode && (Input.GetButton("Fire2") || EditorGUI.dg_screenshot);
     }
 }
 

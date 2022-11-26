@@ -25,7 +25,7 @@ namespace KarlsonLevels
 		public static bool globalMov;
 		public static byte[] currentLevel = new byte[0];
 		public static string currentLevelName = "";
-		public const string version = "0.4.1";
+		public const string version = "0.4.2";
 		public override void OnSceneWasInitialized(int buildIndex, string sceneName) {
 			base.OnSceneWasInitialized(buildIndex, sceneName);
 			editMode = false;
@@ -161,6 +161,7 @@ namespace KarlsonLevels
         public override void OnUpdate()
         {
             discord.RunCallbacks();
+			EditorGUI._OnUpdate();
 			if(runOnMain.Count > 0)
 			{ // once at a time, not to overload
 				runOnMain[0]();
@@ -211,6 +212,8 @@ namespace KarlsonLevels
             });
 			var userManager = discord.GetUserManager();
             userManager.OnCurrentUserUpdate += UserManager_OnCurrentUserUpdate;
+			
+			MelonCoroutines.Start(EditorGUI.ObjectBrowserNewPage());
         }
 
         public static string sessionToken = "";

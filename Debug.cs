@@ -11,6 +11,7 @@ using HarmonyLib;
 
 using static KarlsonLevels.Main;
 using KarlsonLevels.Workshop_API;
+using System.Runtime.InteropServices;
 
 namespace KarlsonLevels
 {
@@ -99,6 +100,7 @@ namespace KarlsonLevels
 
         public static LevelObject Spawn(string obj) {
             int index = Convert.ToInt32(obj);
+            if (Prefabs[index].name == "Player" || Prefabs[index].name == "DetectWeapons") throw new FormatException();
             Prefabs[index].SetActive(true);
             GameObject foo = Object.Instantiate(Prefabs[index], PlayerMovement.Instance.gameObject.transform.position, Quaternion.identity);
             LevelObject bar;
@@ -116,10 +118,17 @@ namespace KarlsonLevels
         }
 
         static int GetId() {
-        back:
-            int foo = UnityEngine.Random.Range(1, 10000);
-            foreach (LevelObject l in Level) if (l.Id == foo) goto back;
+            // don't use labels =]]]]]]
+            bool found;
+            int foo;
+            do
+            {
+                found = false;
+                foo = UnityEngine.Random.Range(1, 50000); // bigger range yolo
+                foreach (LevelObject l in Level) if (l.Id == foo) { found = true; break; }
+            } while(found);
             return foo;
+            // note from devilexe: id's should've been incrementary, but we are stuck with this now :(
         }
 
         public static IEnumerator NewLoad(string path)
@@ -204,8 +213,11 @@ namespace KarlsonLevels
                 lo.Id = LevelData[i].Id;
                 Level.Add(lo);
             }
-            Time.timeScale = 1f;
-            Game.Instance.StartGame();
+            if (!editMode)
+            {
+                Time.timeScale = 1f;
+                Game.Instance.StartGame();
+            }
         }
 
         static IEnumerator LoadLevel(string path) {
@@ -264,6 +276,33 @@ namespace KarlsonLevels
                 if (path == null)
                     foreach (Collider c in Object.FindObjectsOfType<Collider>()) 
                         if (c.gameObject != PlayerMovement.Instance.gameObject) DestroyObject.Destroy(c.gameObject);
+
+                // create gizmo
+                GameObject go1 = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                go1.GetComponent<Renderer>().material.SetColor("_Color", new Color(0, 0, 0, 1));
+                go1.transform.position = new Vector3(5000, 5000, 5000);
+                go1.transform.transform.localScale = new Vector3(1f, 1f, 1f);
+                GameObject go2 = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                go2.GetComponent<Renderer>().material.SetColor("_Color", new Color(0, 0, 1, 1));
+                go2.transform.position = new Vector3(5000, 5000, 5001);
+                go2.transform.rotation = Quaternion.Euler(90, 0, 0);
+                go2.transform.transform.localScale = new Vector3(0.3f, 1f, 0.3f);
+                GameObject go3 = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                go3.transform.position = new Vector3(5000, 5001, 5000);
+                go3.GetComponent<Renderer>().material.SetColor("_Color", new Color(0, 1, 0, 1));
+                go3.transform.rotation = Quaternion.Euler(0, 0, 0);
+                go3.transform.transform.localScale = new Vector3(0.3f, 1f, 0.3f);
+                GameObject go4 = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                go4.GetComponent<Renderer>().material.SetColor("_Color", new Color(1, 0, 0, 1));
+                go4.transform.position = new Vector3(5001, 5000, 5000);
+                go4.transform.rotation = Quaternion.Euler(0, 0, 90);
+                go4.transform.transform.localScale = new Vector3(0.3f, 1f, 0.3f);
+
+                // create backplane
+                GameObject GObg = GameObject.CreatePrimitive(PrimitiveType.Plane);
+                GObg.GetComponent<Renderer>().GetComponent<Renderer>().material.SetColor("_Color", new Color(0.5f, 0.5f, 0.5f, 1));
+                GObg.transform.localScale = new Vector3(1.6f, 1.6f, 1.6f);
+                GObg.name = "Gizmo Backplane";
             }
             catch (Exception e)
             {
